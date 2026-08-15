@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#16212b">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Мебель PRO">
+<link rel="apple-touch-icon" href="icon.svg"><link rel="manifest" href="manifest.json">
+<title>Мебель PRO v2</title>
+<style>
+:root{--bg:#f2f4f6;--card:#fff;--ink:#16212b;--muted:#6b7680;--line:#e2e6ea;--blue:#1463df;--red:#d92d20;--green:#16834b}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;padding-bottom:env(safe-area-inset-bottom)}
+header{position:sticky;top:0;z-index:5;background:var(--ink);color:white;padding:calc(13px + env(safe-area-inset-top)) 15px 13px}h1{margin:0;font-size:21px}.sub{font-size:12px;opacity:.7;margin-top:3px}
+main{max-width:800px;margin:auto;padding:12px 12px 100px}.card{background:var(--card);border-radius:17px;padding:15px;margin-bottom:12px;box-shadow:0 2px 12px #0000000b}h2{font-size:16px;margin:0 0 12px}
+.tabs{display:flex;gap:7px;overflow:auto;margin-bottom:12px}.tab{white-space:nowrap;background:#e9edf2;color:var(--ink)}.tab.active{background:var(--blue);color:#fff}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}label{font-size:12px;color:var(--muted);display:block;margin-bottom:5px}
+input,select{width:100%;font-size:16px;padding:11px;border:1px solid var(--line);border-radius:11px;background:#fff}button{border:0;border-radius:11px;padding:11px 14px;font-size:15px;font-weight:700;background:var(--blue);color:white}.secondary{background:#e9edf2;color:var(--ink)}.danger{background:var(--red)}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.muted{font-size:12px;color:var(--muted)}.notice{background:#fff6d6;padding:10px;border-radius:10px;font-size:12px}
+.row{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--line)}.row:last-child{border-bottom:0}.grow{flex:1;min-width:0}.num{width:82px}.tiny{width:66px}
+.badge{display:inline-block;padding:4px 8px;border-radius:999px;background:#edf4ff;color:var(--blue);font-size:12px}.total{font-size:25px;font-weight:800}.tablewrap{overflow:auto}table{border-collapse:collapse;width:100%;font-size:12px}th,td{padding:7px 5px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+canvas{width:100%;height:auto;border:1px solid var(--line);border-radius:12px;background:#fafafa}.hide{display:none}
+@media(max-width:500px){.grid{grid-template-columns:1fr}.num{width:74px}.tiny{width:58px}}
+</style>
+</head>
+<body>
+<header><h1>Мебель PRO v2</h1><div class="sub">Шкафы • кухни • ящики • раскрой • фурнитура</div></header>
+<main>
+<div class="tabs">
+<button class="tab active" onclick="showTab('order',this)">Заказ</button>
+<button class="tab" onclick="showTab('product',this)">Изделие</button>
+<button class="tab" onclick="showTab('parts',this)">Детали</button>
+<button class="tab" onclick="showTab('calc',this)">Расчёт</button>
+</div>
+
+<section id="order" class="tabpage">
+<div class="card"><h2>Заказ</h2><div class="grid">
+<div><label>Клиент</label><input id="client" placeholder="Имя клиента"></div>
+<div><label>Номер заказа</label><input id="orderNo" placeholder="№"></div>
+</div><div class="actions"><button onclick="newOrder()">Новый заказ</button><button class="secondary" onclick="saveOrder()">Сохранить</button></div></div>
+<div class="card"><h2>Материалы и цены</h2><div class="grid">
+<div><label>ЛДСП/ЛМДФ, мм</label><select id="thick"><option>16</option><option>18</option></select></div>
+<div><label>Лист</label><select id="sheet"><option value="2800x2070">2800×2070</option><option value="2750x1830">2750×1830</option></select></div>
+<div><label>Цена листа, сум</label><input id="sheetPrice" type="number" value="0"></div>
+<div><label>Пропил, мм</label><input id="kerf" type="number" value="4"></div>
+<div><label>Кромка 0,4 / м</label><input id="edge04" type="number" value="0"></div>
+<div><label>Кромка 1 / м</label><input id="edge1" type="number" value="0"></div>
+<div><label>Кромка 2 / м</label><input id="edge2" type="number" value="0"></div>
+<div><label>Фурнитура, сум</label><input id="hardwarePrice" type="number" value="0"></div>
+</div></div>
+</section>
+
+<section id="product" class="tabpage hide">
+<div class="card"><h2>Добавить изделие</h2><div class="grid">
+<div><label>Тип</label><select id="ptype"><option value="wardrobe">Шкаф</option><option value="kitchen">Кухонный модуль</option><option value="drawer">Тумба с ящиками</option><option value="custom">Произвольное</option></select></div>
+<div><label>Название</label><input id="pname" placeholder="Например: Шкаф 1"></div>
+<div><label>Ширина, мм</label><input id="pw" type="number" value="1200"></div>
+<div><label>Высота, мм</label><input id="ph" type="number" value="2400"></div>
+<div><label>Глубина, мм</label><input id="pd" type="number" value="600"></div>
+<div><label>Количество</label><input id="pqty" type="number" min="1" value="1"></div>
+</div><div class="actions"><button onclick="addProduct()">Добавить изделие</button></div></div>
+<div class="card"><h2>Изделия заказа</h2><div id="products"></div></div>
+</section>
+
+<section id="parts" class="tabpage hide">
+<div class="card"><h2>Детали</h2><div class="muted">Можно добавлять и редактировать детали вручную. Кромка — метры на одну деталь.</div>
+<div id="partsList" style="margin-top:8px"></div><div class="actions"><button class="secondary" onclick="addManualPart()">+ Деталь</button></div></div>
+</section>
+
+<section id="calc" class="tabpage hide">
+<div class="card"><h2>Фурнитура</h2><div class="muted">Количество можно изменить. Цены — за штуку/комплект.</div><div id="hardware"></div><div class="actions"><button class="secondary" onclick="addHardware()">+ Фурнитура</button></div></div>
+<div class="card"><h2>Расчёт</h2><div class="actions"><button onclick="calculate()">Рассчитать всё</button><button class="secondary" onclick="printReport()">Печать / PDF</button></div><div id="result" style="margin-top:12px"><div class="notice">Добавьте изделие и выполните расчёт.</div></div></div>
+<div class="card"><h2>Карта раскроя — лист 1</h2><canvas id="plan" width="900" height="600"></canvas><div id="planInfo" class="muted" style="margin-top:8px">—</div></div>
+</section>
+</main>
+
+<script>
+let products=[],parts=[],hardware=[],last=null;
+const $=id=>document.getElementById(id),v=id=>$(id).value;
+function showTab(id,btn){document.querySelectorAll('.tabpage').forEach(x=>x.classList.add('hide'));$(id).classList.remove('hide');document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));btn.classList.add('active')}
+function newOrder(){products=[];parts=[];hardware=[];last=null;$('client').value='';$('orderNo').value='';renderAll();alert('Новый заказ создан')}
+function addProduct(){
+ const p={type:v('ptype'),name:v('pname')||'Изделие',w:+v('pw'),h:+v('ph'),d:+v('pd'),qty:Math.max(1,+v('pqty')||1)};
+ products.push(p);generateParts(p);generateHardware(p);renderAll();
+}
+function generateParts(p){
+ const T=+v('thick')||16,W=p.w,H=p.h,D=p.d;
+ if(p.type==='wardrobe'){
+  const n=p.qty; addP('Боковина левая',H,D,2*n,'2 мм',n);addP('Боковина правая',H,D,2*n,'2 мм',n);
+  addP('Верх',W-2*T,D,n,'1 мм',n);addP('Низ',W-2*T,D,n,'1 мм',n);
+  addP('Полка',W-2*T,D-2,Math.max(1,Math.floor(H/400))*n,'1 мм',n);
+  addP('Фасад',W/2-2,H-4,2*n,'2 мм',n);
+ }else if(p.type==='kitchen'){
+  const baseH=Math.min(H,720), foot=100;
+  addP('Боковина левая',baseH-foot,D,1*p.qty,'2 мм',p.qty);addP('Боковина правая',baseH-foot,D,1*p.qty,'2 мм',p.qty);
+  addP('Дно',W-2*T,D-20,p.qty,'1 мм',p.qty);addP('Верхняя планка',W-2*T,100,p.qty,'1 мм',p.qty);
+  addP('Фасад',W-4,baseH-foot-4,p.qty,'2 мм',p.qty);
+ }else if(p.type==='drawer'){
+  addP('Боковина левая',H,D,1*p.qty,'2 мм',p.qty);addP('Боковина правая',H,D,1*p.qty,'2 мм',p.qty);
+  addP('Верх',W-2*T,D,p.qty,'1 мм',p.qty);addP('Низ',W-2*T,D,p.qty,'1 мм',p.qty);
+  const count=3;
+  addP('Фасад ящика',W-4,(H-2*T)/count-4,count*p.qty,'2 мм',p.qty);
+  addP('Боковина ящика',D-30,(H-2*T)/count-32,2*count*p.qty,'1 мм',p.qty);
+  addP('Задняя стенка ящика',W-2*T-30,(H-2*T)/count-32,count*p.qty,'0.4 мм',p.qty);
+  addP('Дно ящика',W-2*T-30,D-60,count*p.qty,'0.4 мм',p.qty);
+ }else{
+  addP('Боковина левая',H,D,p.qty,'2 мм',p.qty);addP('Боковина правая',H,D,p.qty,'2 мм',p.qty);
+  addP('Верх',W-2*T,D,p.qty,'1 мм',p.qty);addP('Низ',W-2*T,D,p.qty,'1 мм',p.qty);
+ }
+}
+function addP(n,a,b,q,edge,group){parts.push({n,a:Math.round(a),b:Math.round(b),q,edge,group})}
+function generateHardware(p){
+ if(p.type==='wardrobe'){hardware.push({n:'Петля',q:Math.max(4,Math.ceil(p.h/600))*p.qty,price:0});hardware.push({n:'Ручка',q:2*p.qty,price:0});hardware.push({n:'Конфирмат',q:24*p.qty,price:0})}
+ if(p.type==='kitchen'){hardware.push({n:'Петля',q:2*p.qty,price:0});hardware.push({n:'Ножка',q:4*p.qty,price:0});hardware.push({n:'Конфирмат',q:16*p.qty,price:0})}
+ if(p.type==='drawer'){hardware.push({n:'Направляющие',q:3*p.qty,price:0});hardware.push({n:'Ручка',q:3*p.qty,price:0});hardware.push({n:'Конфирмат',q:24*p.qty,price:0})}
+}
+function addManualPart(){parts.push({n:'Новая деталь',a:500,b:300,q:1,edge:'0.4 мм',group:1});renderParts()}
+function addHardware(){hardware.push({n:'Новая фурнитура',q:1,price:0});renderHardware()}
+function renderProducts(){$('products').innerHTML=products.length?products.map((p,i)=>`<div class="row"><div class="grow"><b>${esc(p.name)}</b><div class="muted">${typeName(p.type)} • ${p.w}×${p.h}×${p.d} мм • ${p.qty} шт.</div></div><button class="danger" onclick="products.splice(${i},1);rebuild()">×</button></div>`).join(''):'<div class="notice">Добавьте первое изделие.</div>'}
+function renderParts(){$('partsList').innerHTML=parts.map((p,i)=>`<div class="row"><input class="grow" value="${esc(p.n)}" onchange="parts[${i}].n=this.value"><input class="num" type="number" value="${p.a}" onchange="parts[${i}].a=+this.value"><input class="num" type="number" value="${p.b}" onchange="parts[${i}].b=+this.value"><input class="tiny" type="number" value="${p.q}" onchange="parts[${i}].q=+this.value"><button class="danger" onclick="parts.splice(${i},1);renderParts()">×</button></div>`).join('')}
+function renderHardware(){$('hardware').innerHTML=hardware.map((p,i)=>`<div class="row"><input class="grow" value="${esc(p.n)}" onchange="hardware[${i}].n=this.value"><input class="num" type="number" value="${p.q}" onchange="hardware[${i}].q=+this.value"><input class="num" type="number" value="${p.price}" onchange="hardware[${i}].price=+this.value"><button class="danger" onclick="hardware.splice(${i},1);renderHardware()">×</button></div>`).join('')}
+function renderAll(){renderProducts();renderParts();renderHardware()}
+function rebuild(){parts=[];hardware=[];products.forEach(p=>{generateParts(p);generateHardware(p)});renderAll()}
+function calculate(){
+ const [SW,SH]=v('sheet').split('x').map(Number),kerf=+v('kerf')||4;
+ let all=[];parts.forEach((p,pi)=>{for(let i=0;i<Math.max(1,p.q);i++)all.push({...p,id:pi})});
+ let sheets=[{items:[],x:0,y:0,rowH:0}];
+ for(const p of all){
+  let ok=false;
+  for(const rot of [false,true]){
+   const w=rot?p.b:p.a,h=rot?p.a:p.b;if(w>SW||h>SH)continue;
+   let s=sheets.at(-1),x=s.x,y=s.y,row=s.rowH;
+   if(x+w>SW){x=0;y+=row+kerf;row=0}
+   if(y+h>SH){s={items:[],x:0,y:0,rowH:0};sheets.push(s);x=0;y=0;row=0}
+   s.items.push({p,w,h,x,y,rot});s.x=x+w+kerf;s.rowH=Math.max(row,h);ok=true;break
+  }
+  if(!ok){alert('Деталь больше выбранного листа: '+p.n);return}
+ }
+ const area=all.reduce((s,p)=>s+p.a*p.b,0),sa=SW*SH,waste=Math.max(0,sheets.length*sa-area);
+ let e04=0,e1=0,e2=0;parts.forEach(p=>{let m=(p.a*2+p.b*2)/1000*(p.q||1);if((p.edge||'').startsWith('0.4'))e04+=m;else if((p.edge||'').startsWith('2'))e2+=m;else e1+=m});
+ const hw=hardware.reduce((s,x)=>s+(+x.q||0)*(+x.price||0),0),mat=sheets.length*(+v('sheetPrice')||0),ec=e04*(+v('edge04')||0)+e1*(+v('edge1')||0)+e2*(+v('edge2')||0),total=mat+ec+hw;
+ last={SW,SH,sheets,area,waste,e04,e1,e2,hw,mat,ec,total};
+ $('result').innerHTML=`<div class="row"><span>Изделий</span><b>${products.reduce((s,p)=>s+p.qty,0)}</b></div><div class="row"><span>Деталей</span><b>${all.length} шт.</b></div><div class="row"><span>Листов</span><b>${sheets.length}</b></div><div class="row"><span>Отход</span><b>${(waste/1e6).toFixed(2)} м²</b></div><div class="row"><span>Кромка 0,4 / 1 / 2 мм</span><b>${e04.toFixed(1)} / ${e1.toFixed(1)} / ${e2.toFixed(1)} м</b></div><div class="row"><span>Фурнитура</span><b>${hw.toLocaleString('ru-RU')} сум</b></div><div class="row"><span>Материал + кромка</span><b>${(mat+ec).toLocaleString('ru-RU')} сум</b></div><div style="margin-top:12px"><span class="badge">Себестоимость</span><div class="total">${total.toLocaleString('ru-RU')} сум</div></div><div class="tablewrap" style="margin-top:12px"><table><tr><th>Фурнитура</th><th>Кол.</th><th>Сум.</th></tr>${hardware.map(x=>`<tr><td>${esc(x.n)}</td><td>${x.q}</td><td>${(+x.q*x.price).toLocaleString('ru-RU')}</td></tr>`).join('')}</table></div>`;
+ draw(sheets[0],SW,SH);$('planInfo').textContent=`Лист 1 из ${sheets.length}. Алгоритм учитывает пропил и поворот деталей; это предварительная карта раскроя.`
+}
+function draw(s,SW,SH){const c=$('plan'),ctx=c.getContext('2d'),pad=25,sc=Math.min((c.width-2*pad)/SW,(c.height-2*pad)/SH);ctx.clearRect(0,0,c.width,c.height);ctx.strokeStyle='#16212b';ctx.strokeRect(pad,pad,SW*sc,SH*sc);s.items.forEach(it=>{let x=pad+it.x*sc,y=pad+it.y*sc,w=it.w*sc,h=it.h*sc;ctx.strokeStyle='#1463df';ctx.strokeRect(x,y,w,h);ctx.fillStyle='#16212b';ctx.font='12px system-ui';ctx.fillText(it.p.n.slice(0,18),x+3,y+14)})}
+function saveOrder(){if(!last){alert('Сначала рассчитайте');return}const a=JSON.parse(localStorage.getItem('mp2')||'[]');a.unshift({date:new Date().toLocaleString('ru-RU'),client:v('client')||'Без названия',no:v('orderNo'),total:last.total});localStorage.setItem('mp2',JSON.stringify(a.slice(0,50)));alert('Заказ сохранён')}
+function printReport(){if(!last){alert('Сначала рассчитайте');return}window.print()}
+function typeName(t){return t==='wardrobe'?'Шкаф':t==='kitchen'?'Кухонный модуль':t==='drawer'?'Тумба с ящиками':'Произвольное'}
+function esc(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+standardInit=function(){};renderAll();
+if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+</script>
+</body>
+</html>
